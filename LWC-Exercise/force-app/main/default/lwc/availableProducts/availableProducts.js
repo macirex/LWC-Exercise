@@ -2,37 +2,39 @@ import { LightningElement, api, track, wire } from 'lwc';
 import Pricebook2Id from '@salesforce/schema/order.Pricebook2Id';
 import { getRecord } from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
-import getOpps from '@salesforce/apex/AvailableProductsController.getOpps';
 import getAvailableProducts from '@salesforce/apex/AvailableProductsController.getAvailableProducts';
 
 const FIELDS = [
     Pricebook2Id,
 ];
 
+
 const columns = [
-{
-    label: 'Name',
-    fieldName: 'Name',
-    type: 'text',
-    sortable: true
-},
-{
-    label: 'List Price',
-    fieldName: 'UnitPrice',
-    sortable: true,
-    type: 'currency'
-},{
-    label: 'Add Product',
-    type: 'button-icon',
-    initialWidth: 75,
-    typeAttributes: {
-        iconName: 'utility:cart',
-        title: 'Add Product',
-        variant: 'border-filled',
-        alternativeText: 'Add Product'
+    {
+        label: 'Name',
+        fieldName: 'Name',
+        type: 'text',
+        sortable: true
+    },
+    {
+        label: 'List Price',
+        fieldName: 'UnitPrice',
+        sortable: true,
+        type: 'currency',
+        typeAttributes: { currencyCode: 'EUR', step: '0.001'}
+    },{
+        label: 'Add Product',
+        type: 'button-icon',
+        initialWidth: 75,
+        typeAttributes: {
+            iconName: 'utility:cart',
+            title: 'Add Product',
+            variant: 'border-filled',
+            alternativeText: 'Add Product'
+        }
     }
-}
-];
+    ];
+
 
 export default class AvailableProducts extends LightningElement {
     @api recordId;
@@ -41,7 +43,6 @@ export default class AvailableProducts extends LightningElement {
     order;
     @track value;
     @track error;
-    @track data;
     @api sortedDirection = 'asc';
     @api sortedBy = 'Name';
     @api searchKey = '';
@@ -79,9 +80,8 @@ export default class AvailableProducts extends LightningElement {
             return refreshApex(this.result);
         }
     }
-    
     isLoading() {
-        return this.isLoading;
+        return !this.wiredProperty.data && !this.wiredProperty.error;
     }
 
     callRowAction( event ) {  
