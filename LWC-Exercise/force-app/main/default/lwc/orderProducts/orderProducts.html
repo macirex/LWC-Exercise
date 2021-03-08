@@ -1,6 +1,5 @@
 <template>
     <lightning-card title="Order Products" icon-name="standard:orders">
-        <template if:true={wiredOrderProducts.data}>
             <div class="slds-m-around_medium">
                 <lightning-datatable key-field="Id" data={data} columns={columns} sorted-by={sortedBy}
                     sorted-direction={sortedDirection} onsort={sortColumns} hide-checkbox-column
@@ -9,9 +8,5 @@
                 </lightning-datatable>
                 </br>
             </div>
-        </template>
-        <template if:true={wiredOrderProducts.error}>
-            <c-error-panel errors={order.error}></c-error-panel>
-        </template>
     </lightning-card>
 </template>
