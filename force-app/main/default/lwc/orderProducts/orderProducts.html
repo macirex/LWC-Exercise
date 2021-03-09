@@ -7,6 +7,11 @@
                     >
                 </lightning-datatable>
                 </br>
+                <template if:false={isActive}>
+                    <lightning-button label="Activate" onclick={clickHandler}>
+                        
+                    </lightning-button>    
+                </template>
             </div>
     </lightning-card>
 </template>

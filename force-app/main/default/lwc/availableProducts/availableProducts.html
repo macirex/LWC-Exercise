@@ -2,16 +2,30 @@
     <lightning-card title="Available Products" icon-name="standard:orders">
         <template if:true={order.data}>
             <div class="slds-m-around_medium">
-                <lightning-input type="search" onchange={handleKeyChange} class="slds-m-bottom_small" label="Search"
-                    value={searchKey}>
-                </lightning-input>
-                <lightning-datatable key-field="Id" data={data} columns={columns} sorted-by={sortedBy}
-                    sorted-direction={sortedDirection} onsort={sortColumns} hide-checkbox-column
-                    onrowaction={callRowAction}>  
-                    >
-                </lightning-datatable>
-                </br>
-            </div>
+                <template if:true={isActive}>
+                    <div class="slds-scoped-notification slds-media slds-media_center slds-scoped-notification_light" role="status">
+                        <div class="slds-media__figure">
+                            <lightning-icon icon-name="utility:info" alternative-text="Info" title="info" > 
+                            </lightning-icon>
+                        </div>
+                        <div class="slds-media__body">
+                          <p>Activated orders cannot accept any more products.
+                          </p>
+                        </div>
+                      </div>
+                </template>
+                <template if:false={isActive}>
+                        <lightning-input type="search" onchange={handleKeyChange} class="slds-m-bottom_small" label="Search"
+                            value={searchKey}>
+                        </lightning-input>
+                        <lightning-datatable key-field="Id" data={data} columns={columns} sorted-by={sortedBy}
+                            sorted-direction={sortedDirection} onsort={sortColumns} hide-checkbox-column
+                            onrowaction={callRowAction}>  
+                            >
+                        </lightning-datatable>
+                        </br>
+                </template>
+             </div>
         </template>
         <template if:true={order.error}>
             <c-error-panel errors={order.error}></c-error-panel>

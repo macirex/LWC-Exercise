@@ -1,11 +1,14 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import Pricebook2Id from '@salesforce/schema/order.Pricebook2Id';
-import { getRecord } from 'lightning/uiRecordApi';
+import Status from '@salesforce/schema/order.Status';
+
+import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
 import getAvailableProducts from '@salesforce/apex/AvailableProductsController.getAvailableProducts';
 
 const FIELDS = [
     Pricebook2Id,
+    Status
 ];
 
 
@@ -95,5 +98,8 @@ export default class AvailableProducts extends LightningElement {
       
     }  
      
+    get isActive() {    
+        return getFieldValue(this.order.data, Status) == 'Activated';
+    }
     
 }
