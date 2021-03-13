@@ -86,7 +86,7 @@ export default class OrderProducts extends LightningElement {
         const fields = {};
         fields[Id.fieldApiName] = this.recordId;
         fields[Status.fieldApiName] = 'Activated';
-        fields[StatusCode.fieldApiName] = 'A';
+        fields[StatusCode.fieldApiName] = 'Activated';
 
         const orderRecord = { fields };
         debugger;
