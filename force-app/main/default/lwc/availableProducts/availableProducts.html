@@ -1,5 +1,5 @@
 <template>
-    <lightning-card title="Available Products" icon-name="standard:orders">
+    <lightning-card title="Available Products" icon-name="standard:orders" onrefreshevent={selfRefresh} class="available-product">
         <template if:true={order.data}>
             <div class="slds-m-around_medium">
                 <template if:true={isActive}>
@@ -18,15 +18,23 @@
                         <lightning-input type="search" onchange={handleKeyChange} class="slds-m-bottom_small" label="Search"
                             value={searchKey}>
                         </lightning-input>
+                        <div if:true={isLoading} class="slds-spinner_inline spinner-padding">
+                            <lightning-spinner variant="brand" 
+                                               alternative-text="Loading"     
+                                               size="medium">
+                            </lightning-spinner>
+                        </div>
                         <lightning-datatable key-field="Id" data={data} columns={columns} sorted-by={sortedBy}
                             sorted-direction={sortedDirection} onsort={sortColumns} hide-checkbox-column
                             onrowaction={callRowAction}>  
                             >
                         </lightning-datatable>
+
                         </br>
                 </template>
              </div>
         </template>
+        
         <template if:true={order.error}>
             <c-error-panel errors={order.error}></c-error-panel>
         </template>

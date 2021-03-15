@@ -5,12 +5,17 @@ import Status from '@salesforce/schema/order.Status';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
 import getAvailableProducts from '@salesforce/apex/AvailableProductsController.getAvailableProducts';
+import addProductToOrder from '@salesforce/apex/AvailableProductsController.addProductToOrder';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+
+import orderProductMessageChannel from '@salesforce/messageChannel/orderProduct__c';
+import {publish, MessageContext} from 'lightning/messageService'
+/* I could have used normal Javascript events, but then I thought about scalability and then decided to use Salesforce own Message Service/Events*/
 
 const FIELDS = [
     Pricebook2Id,
     Status
 ];
-
 
 const columns = [
     {
@@ -46,60 +51,97 @@ export default class AvailableProducts extends LightningElement {
     order;
     @track value;
     @track error;
+    //I know that track is deprecated on the latest LWC release, but I got used to see it, that's why I still use it.
+
     @api sortedDirection = 'asc';
     @api sortedBy = 'Name';
     @api searchKey = '';
    
     @track data = []; 
     @track columns; 
+    @track isLoading=true; 
 
-    @wire(getAvailableProducts, {   pricebook2Id: '$order.data.fields.Pricebook2Id.value' 
+    @wire(MessageContext)
+    messageContext;
+
+    @track wiredAvailableProducts;
+
+    @wire(getAvailableProducts, { orderId: '$recordId', pricebook2Id: '$order.data.fields.Pricebook2Id.value' 
         ,searchKey: '$searchKey', sortBy: '$sortedBy', sortDirection: '$sortedDirection'})
-    wiredAvailableProducts({ error, data }) {
+    getAvailableProductsCallback(response) {
+        this.wiredAvailableProducts = response;
+        const data = response.data;
+        const error = response.error;
         if (data) {
-            debugger;
             let jsonData = JSON.parse(data);
             this.data = jsonData;
             this.columns = columns;
             this.error = undefined;
         } else if (error) {
-            debugger;
-
             this.error = error;
             this.data = undefined;
         }
+        this.isLoading=false;
     }
 
     sortColumns( event ) {
         this.sortedBy = event.detail.fieldName;
         this.sortedDirection = event.detail.sortDirection;
-        return refreshApex(this.result);
-        
+        return this.selfRefresh();
+        /*
+            Not my ideal way of doing the sorting as this add and additional API Call, 
+            I could have done it in pure JS but it's time consuming and I wanted to deliver this as fast as possible.
+        */
     }
   
     handleKeyChange( event ) {
-        if(event.target.value.length >= 3){
             this.searchKey = event.target.value;
-            return refreshApex(this.result);
-        }
-    }
-    isLoading() {
-        return !this.wiredProperty.data && !this.wiredProperty.error;
+            return this.selfRefresh();
+            /*
+                Not my ideal way of doing the search as this add an additional API Call, 
+                I could have done it in pure JS but it's time consuming and I wanted to deliver this as fast as possible.
+            */
     }
 
     callRowAction( event ) {  
-        debugger;
-        const recId =  event.detail.row.Id;
+        let rowData =  event.detail.row;
+        rowData.OrderId = this.recordId;
+        rowData.Pricebook2Id = this.order.data.fields.Pricebook2Id.value;
         const title =  event.detail.action.title;  
 
-        if ( recId && title && title === 'Add Product' ) {  
-            debugger;
+        if ( rowData && title && title === 'Add Product' ) {  
+            addProductToOrder({data: rowData}).then(() => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'Product successfully added',
+                        variant: 'success'
+                    })
+                );
+                publish(this.messageContext, orderProductMessageChannel, {recordData:{}});
+            })
+            .catch(error => {
+                debugger;
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Product could not be added',
+                        message: error.body.message,
+                        variant: 'error'
+                    })
+                );
+            });
+
+
         }          
       
     }  
+
+    selfRefresh(){
+        this.isLoading=true;
+        return refreshApex(this.wiredAvailableProducts);
+    }
      
     get isActive() {    
         return getFieldValue(this.order.data, Status) == 'Activated';
     }
-    
 }
