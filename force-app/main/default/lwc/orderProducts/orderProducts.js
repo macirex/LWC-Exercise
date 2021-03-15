@@ -7,6 +7,7 @@ import Status from '@salesforce/schema/order.Status';
 import AccountId from '@salesforce/schema/order.AccountId';
 import Type from '@salesforce/schema/order.Type';
 import Id from '@salesforce/schema/order.Id';
+import StatusCode from '@salesforce/schema/order.StatusCode';
 
 import { updateRecord } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
@@ -19,7 +20,8 @@ import {subscribe, MessageContext} from 'lightning/messageService'
         AccountId,
         Id,
         Status,
-        Type
+        Type,
+        StatusCode
     ];
 
     const columns = [
@@ -112,7 +114,7 @@ export default class OrderProducts extends LightningElement {
         
     }
 
-    clickHandler(){
+    activateOrder= ()=>{
         const fields = {};
         fields[Id.fieldApiName] = this.recordId;
         fields[Status.fieldApiName] = 'Activated';
